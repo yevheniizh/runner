@@ -1,13 +1,32 @@
 const game = new (function () {
   const game = this;
+
+  const MOUSE_BUTTON = ['left', 'middle', 'right'];
+
   let scene,
     camera,
+    config = {
+      mouse_lock: false,
+    },
     renderer,
+    mouse = {
+      position: { x: 0, y: 0 },
+      speed: { x: 0, y: 0 },
+      locked: false,
+      keys: {
+        left: false,
+        right: false,
+        middle: false,
+        wheel: 0,
+      },
+    },
     keys = {},
     events = {
       keydown: null,
       keyup: null,
       keypress: null,
+      mousedown: null,
+      mouseup: null,
     };
 
   const v = (this.v = (x, y, z) => {
@@ -42,7 +61,7 @@ const game = new (function () {
     requestAnimationFrame(animate);
   });
 
-  this.init = () => {
+  this.init = (settings) => {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(
       75,
@@ -53,16 +72,57 @@ const game = new (function () {
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
 
-    window.addEventListener('keydown', (event) => {
-      if (!keys[event.code]) {
-        keys[event.code] = true;
-        call_event('keypress', keys);
+    if (settings.keys_capture) {
+      window.addEventListener('keydown', (event) => {
+        if (!keys[event.code]) {
+          keys[event.code] = true;
+          call_event('keypress', keys);
+        }
+      });
+      window.addEventListener('keyup', (event) => {
+        keys[event.code] = false;
+        call_event('keyup', keys);
+      });
+    }
+
+    if (settings.mouse_capture) {
+      if (settings.mouse_lock) {
+        config.mouse_lock = true;
+        document.addEventListener('pointerlockchange', (event) => {
+          mouse.locked = !!document.pointerLockElement;
+        });
       }
-    });
-    window.addEventListener('keyup', (event) => {
-      keys[event.code] = false;
-      call_event('keyup', keys);
-    });
+
+      window.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+      });
+
+      window.addEventListener('mousedown', (event) => {
+        event.preventDefault();
+        mouse.keys[MOUSE_BUTTON[event.button]] = true;
+        call_event('mousedown', mouse);
+
+        if (config.mouse_lock && !mouse.locked) {
+          console.log('locked');
+          document.body.requestPointerLock();
+        }
+      });
+
+      window.addEventListener('mouseup', (event) => {
+        event.preventDefault();
+        mouse.keys[MOUSE_BUTTON[event.button]] = false;
+        call_event('mouseup', mouse);
+      });
+
+      window.addEventListener('mousemove', (event) => {
+        event.preventDefault();
+        mouse.position.x = event.screenX;
+        mouse.position.y = event.screenY;
+        mouse.speed.x = event.movementX;
+        mouse.speed.y = event.movementY;
+        call_event('mousemove', mouse);
+      });
+    }
 
     document.body.appendChild(renderer.domElement);
     animate();
