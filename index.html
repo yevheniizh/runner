@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Runner</title>
+    <script src="scripts/three.js"></script>
+    <script src="scripts/game.js"></script>
+    <link rel="stylesheet" href="styles/game.css" />
+  </head>
+  <body>
+    <script>
+      const SPEED_CAMERA = 0.5;
+      game.init();
+
+      game.addCube({ position: game.v(0, 0, 0), color: '#ffc800' });
+      game.addCube({ position: game.v(5, 0, 0), color: '#163456' });
+
+      game.on('keydown', (keys) => {
+        if (keys.KeyW) {
+          game.getCamera().position.z -= SPEED_CAMERA;
+        } else if (keys.KeyS) {
+          game.getCamera().position.z += SPEED_CAMERA;
+        } else if (keys.KeyA) {
+          game.getCamera().position.x -= SPEED_CAMERA;
+        } else if (keys.KeyD) {
+          game.getCamera().position.x += SPEED_CAMERA;
+        }
+      });
+
+      game.on('keypress', (keys) => {
+        console.log('press', keys);
+      });
+      game.on('keyup', (keys) => {
+        console.log('up', keys);
+      });
+    </script>
+  </body>
+</html>
